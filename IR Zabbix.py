@@ -10,7 +10,7 @@ zapi = ZabbixAPI(server=zabbix_url)
 zapi.login(zabbix_user, zabbix_password)
 
 #Function using API for add host
-def send_API(host_name, host_ip, group_id, template_id):
+def send_API(host_name, host_ip, group_id, template_id, n_DNS):
     try:
         host = zapi.host.create({
             'host': host_name,
@@ -19,7 +19,7 @@ def send_API(host_name, host_ip, group_id, template_id):
                 'main': 1,  # Interface principale
                 'useip': 0,  # Utiliser le DNS (0 = utiliser DNS, 1 = utiliser IP)
                 'ip': host_ip,  # Adresse IP de l'hôte
-                'dns': host_name,  # Nom DNS de l'hôte
+                'dns': n_DNS,  # Nom DNS de l'hôte
                 'port': 'xxxx',  # Port par défaut pour l'agent Zabbix
                 }],
             'groups': [{'groupid': group_id}],
@@ -57,14 +57,14 @@ with open(r'xxxx\liste.csv', newline='') as csv_file:
         f.close
 
         #install Zabbix agent with powershell script
-        #p = subprocess.Popen(["powershell.exe", r"xxxx\InstallAgentZabbix2WithChocoV3.ps1"], stdout=sys.stdout) #location of PS1 script
-        #p.wait()
+        p = subprocess.Popen(["powershell.exe", r"xxxx\InstallAgentZabbix2WithChocoV3.ps1"], stdout=sys.stdout) #location of PS1 script
+        p.wait()
 
         f = open("logs.txt", "a")
         f.write("   Install is good\n")
         f.close
 
-        #send_API(rows[i][0].split(";")[1].split(".")[0], rows[i][0].split(";")[0], group_id, template_id)
+        send_API(rows[i][0].split(";")[1].split(".")[0], rows[i][0].split(";")[0], group_id, template_id, rows[i][0].split(";"))
 
         f = open("logs.txt", "a")
         f.write("   Registre in Zabbix\n")
