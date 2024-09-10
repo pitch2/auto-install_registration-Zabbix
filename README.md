@@ -2,4 +2,4 @@
 Install Zabbix with powershell and python (Windows Server)
 
 
-The powershell script by my colleague (I add list method)
+The powershell script by my colleague (I added list method)
