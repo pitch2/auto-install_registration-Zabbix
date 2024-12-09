@@ -1,6 +1,6 @@
 ## Auto-install and registration in Zabbix
 
-## Lire les id de templates et  de groups en python
+#### Lire les id de templates et  de groups en python
 
 **Pour groups**
 ```python
@@ -31,7 +31,7 @@ else:
 
 ```
 
-### Pour le python
+##### Le python
 Nous prenons en entrer un CSV
 
 > NOM_DNS,IP;NOM_DNS,IP...
@@ -53,4 +53,8 @@ Voici les étapes qu'il faut suivre :
 <span style="background:#d4b106">Et enfin une vérification</span> (agent en vert, informations cohérentes...)
 
 ---
+
+####
+
+Les scritps sont en powershell en utilisant chocolatey
 
