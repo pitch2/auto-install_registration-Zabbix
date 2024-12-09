@@ -1,3 +1,5 @@
+## Auto-install and registration in Zabbix
+
 ## Lire les id de templates et  de groups en python
 
 **Pour groups**
