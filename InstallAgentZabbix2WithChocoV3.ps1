@@ -1,54 +1,32 @@
-﻿$PClisting = [System.Collections.ArrayList]@('')
-$cible_txt = Get-Content xxx\cible.txt
-$PClisting.Add($cible_txt)
+$PClisting = [System.Collections.ArrayList]@()
+
 
 if ($PClisting -ne $null)
 {
-    foreach ($item in $PClisting)
+    foreach ($RemoteComputer in $PClisting)
     {
-        try
+        If (Test-Connection -ComputerName $RemoteComputer -Quiet)
         {
-        # Create new remote PS session object
-        $s= New-PSSession -ComputerName $item 
-        $packageName="zabbix-agent2"
-
-        Invoke-Command -Session $s -ScriptBlock { 
-       
-    
-        function SetParamsMSI_AgentZabbix2 {
-	        param(
-		        [Parameter(Mandatory=$true, Position=0)][string] $installFolder,
-		        [Parameter(Mandatory=$true, Position=1)][string] $hostname
-	        )
-           
-                $a="/LOGTYPE:file /LOGFILE:"+ "'" + $installFolder + "\zabbix_agentd.log" + "'" + " /SERVER:xxxx /LISTENPORT:xxxx /SERVERACTIVE:xxxx /INSTALLFOLDER:"+ "'" + $installFolder + "'" +" /HOSTNAME:"+ "'" + $hostname + "'" + " /TLSCONNECT:psk /TLSACCEPT:psk /TLSPSKIDENTITY:xxxxx /TLSPSKVALUE:xxxxx /ALLOWDENYKEY:AllowKey=system.run[*] /SKIP:fw" #change the XXXX
-                $ParamsList='--package-parameters='+$a
-                
-                $o=$ParamsList 
-            return $o
+            try
+            {
+                Invoke-Command -ComputerName $RemoteComputer -ScriptBlock {
+                    Set-ExecutionPolicy Unrestricted
+                    choco feature enable -n=allowGlobalConfirmation
+                    choco install smartmontools
+                    #choco install zabbix-agent2 --package-parameters "/LOGTYPE:file /LOGFILE: C:\Program Files\Zabbix Agent  \zabbix_agentd.log /SERVER:<IPSERVER> /LISTENPORT:<PORT> /SERVERACTIVE:<IPSERVERORPROXY> /INSTALLFOLDER: C:\Program Files\Zabbix Agent /HOSTAME: $RemoteComputer /TLSCONNECT:psk /TLSACCEPT:psk /TLSPSKIDENTITY:<PSKNAME> /TLSPSKVALUE:<PSKKEY> /ALLOWDENYKEY:AllowKey=system.run[*]"
+                    choco install zabbix-agent2 --package-parameters "/LOGTYPE:file /LOGFILE: C:\Program Files\Zabbix Agent  \zabbix_agentd.log /SERVER:<IPSERVER> /LISTENPORT:<PORT> /SERVERACTIVE:<IPSERVERORPROXY> /INSTALLFOLDER: C:\Program Files\Zabbix Agent /HOSTAME: $RemoteComputer"
+                    Set-Content -Path 'C:\Program Files\Zabbix Agent\zabbix_agent2.d\plugins.d\smart.conf' -Value ((Get-Content -Path 'C:\Program Files\Zabbix Agent\zabbix_agent2.d\plugins.d\smart.conf') -replace '# Plugins.Smart.Path=','Plugins.Smart.Path=C:\Program Files\smartmontools\bin\smartctl.exe')
+                }
+            }
+            catch
+            {
+                Write-Host "Something was getting wrong: " $RemoteComputer-ForegroundColor Red
+            }
+            Write-Host "Task successfully completed on: " $RemoteComputer -ForegroundColor Green
         }
-            
-        if (-not (Test-Path -LiteralPath “C:\Program Files\Zabbix Agent")) 
+        else
         {
-            choco feature enable -n=allowGlobalConfirmation
-            
-            $packageArgs=SetParamsMSI_AgentZabbix2 “C:\Program Files\Zabbix Agent" $using:item 
-
-            choco install $using:packageName $packageArgs
-    
-            $exitCode = $LASTEXITCODE
-            choco feature disable -n=allowGlobalConfirmation    
-        }
-        }    
-        
-        # Clean session disconnection
-        Disconnect-PSSession -Session $s 
-
-        Write-Host "Successfully deployed package: " $packageName + " on: " $item  -ForegroundColor Cyan
-        }
-        catch{
-            $Error[0].Exception.Message
-            Write-Host "Something was getting wrong with: " $exitCode + " on: " $item  -ForegroundColor Red
-        } 
+        Write-Host "Can't connect to PC: " $RemoteComputer -ForegroundColor Red
+        }        
     }
 }
