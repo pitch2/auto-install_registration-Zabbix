@@ -10,34 +10,34 @@ if ($PClisting -ne $null)
             try
             {
                 Invoke-Command -ComputerName $RemoteComputer -ScriptBlock {
-                    Set-ExecutionPolicy Unrestricted
-                    #installation de choco
-                    $choco_install_ON = Test-Path "C:\ProgramData\chocolatey"
-                    $zabbix_install_ON =  Test-Path "C:\Program Files\Zabbix Agent"
-                    $smartmontools_install_ON = Test-Path "C:\Program Files\smartmontools"
-                    if ($choco_install_ON -eq 'False') 
-                        {
-                            #installation choco
-                            Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-                        }
-                    else
-                        {
-                            #maj choco
-                            choco upgrade chocolatey
-                        }
+                Set-ExecutionPolicy Unrestricted
 
-                    if ($smartmontools_install_ON -eq 'True')
-                    # desinstallation choco
-                        {
-                            choco uninstall smartmontools -y --removedependencies
-                        }
+                # Check if choco is installed
+                $choco_install_ON = Test-Path "C:\ProgramData\chocolatey" #Verification d'installation de choco
+                $zabbix_install_ON = Test-Path "C:\Program Files\Zabbix Agent" #Verification d'installation de Zabbix
+                $smartmontools_install_ON = Test-Path "C:\Program Files\smartmontools" #Verification d'installation de smartmontools
 
-                    if ($zabbix_install_ON -eq 'True')
-                    # desinstallation choco
-                        {
-                            choco uninstall zabbix-agent2 -y --removedependencies 
-                        }   
+                if (-not $choco_install_ON) { #si choco n'est installé -> installation
+                    Write-Host "Installing choco on $RemoteComputer" -ForegroundColor Yellow
+                    Set-ExecutionPolicy Bypass -Scope Process -Force
+                    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+                } else { #si choco est installé -> upgrade
+                    Write-Host "Upgrading choco on $RemoteComputer" -ForegroundColor Yellow
+                    choco upgrade chocolatey
                 }
+                if ($smartmontools_install_ON) { #si smart est installé -> désinstallation
+                    Write-Host "Uninstalling smartmontools on $RemoteComputer" -ForegroundColor Yellow
+                    choco uninstall smartmontools -y --removedependencies
+                } else {
+                    Write-Host "No smartmontools in $RemoteComputer" -ForegroundColor Cyan
+                }
+                if ($zabbix_install_ON) { #si zabbix est installé -> désinstallation
+                    Write-Host "Uninstalling Zabbix Agent on $RemoteComputer" -ForegroundColor Yellow
+                    choco uninstall zabbix-agent2 -y --removedependencies
+                } else {
+                    Write-Host "No zabbix agent on $RemoteComputer" -ForegroundColor Cyan
+                }
+            }
 
             }
             catch
