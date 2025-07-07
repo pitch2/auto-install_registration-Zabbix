@@ -22,7 +22,7 @@ if ($PClisting -ne $null)
 
                     #FOR NO PSK : choco install zabbix-agent2 --no-progress --package-parameters "/LOGTYPE:file /LOGFILE: C:\Program Files\Zabbix Agent  \zabbix_agentd.log /SERVER:<IPSERVER> /LISTENPORT:<PORT> /SERVERACTIVE:<IPSERVER> /INSTALLFOLDER: C:\Program Files\Zabbix Agent /HOSTAME: $RemoteComputer
                     Set-Content -Path 'C:\Program Files\Zabbix Agent 2\zabbix_agent2.d\plugins.d\smart.conf' -Value ((Get-Content -Path 'C:\Program Files\Zabbix Agent 2\zabbix_agent2.d\plugins.d\smart.conf') -replace '# Plugins.Smart.Path=','Plugins.Smart.Path=C:\Program Files\smartmontools\bin\smartctl.exe') #changement de conf du fichier zabbix -> smart
-
+                    # si par GPO : winget install --id=smartmontools.smartmontools -e --accept-source-agreements
                     Write-Host "Task successfully completed on: " $RemoteComputer -ForegroundColor Green
                 }
             }
